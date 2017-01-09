@@ -314,7 +314,7 @@ class TraceabilityChecker(object):
         ''' check consistency for requirements '''
         errors = []
         if not self.requirements:
-            errors.append("No requirements found.")
+            errors.append("no valid requirements found.")
 
         for r in self.requirements:
             #print "Checking ", r.name, ':', r.raw_trace_reqs
@@ -327,39 +327,39 @@ class TraceabilityChecker(object):
                         errors.append(e)
 
             if not r.name.startswith(self.cfg['REQUIREMENT_PREFIX']):
-                errors.append("No valid requirement prefix: %s" % r.name)
+                errors.append("invalid requirement prefix: %s" % r.name)
 
             if self.cfg['USER_REQ_TAG'] in r.name:
                 assert(not r.upstream_reqs) # should not be possible at all
                 if not r.downstream_reqs:
-                    errors.append("No downstream requirements for user requirement %s" % r.name)
+                    errors.append("no system requirements for user requirement %s" % r.name)
                 else:
                     for dr_name in r.downstream_reqs:
                         if not self.is_sys_req(dr_name):
-                            errors.append("%s: Bad downstream requirement %s (must be system requirement)" % (r.name, dr_name))
+                            errors.append("%s: bad downstream requirement %s (must be system requirement)" % (r.name, dr_name))
             elif self.cfg['SYS_REQ_TAG'] in r.name:
                 if not r.upstream_reqs:
-                    errors.append("No upstream requirements for system requirement %s" % r.name)
+                    errors.append("no user requirements for system requirement %s" % r.name)
                 else:
                     for ur_name in r.upstream_reqs:
                         if not self.is_user_req(ur_name):
-                            errors.append("%s: Bad upstream requirement %s (must be user requirement)" % (r.name, ur_name))
+                            errors.append("%s: bad upstream requirement %s (must be user requirement)" % (r.name, ur_name))
                 if not r.downstream_reqs:
-                    errors.append("No downstream requirements for system requirement %s" % r.name)
+                    errors.append("no software requirements for system requirement %s" % r.name)
                 else:
                     for dr_name in r.downstream_reqs:
                         if not self.is_sw_req(dr_name):
-                            errors.append("%s: Bad downstream requirement %s (must be software requirement)" % (r.name, dr_name))
+                            errors.append("%s: bad downstream requirement %s (must be software requirement)" % (r.name, dr_name))
             elif self.cfg['SW_REQ_TAG'] in r.name:
                 assert(not r.downstream_reqs) # nope out
                 if not r.upstream_reqs:
-                    errors.append("No upstream requirements for software requirement %s" % r.name)
+                    errors.append("No system requirements for software requirement %s" % r.name)
                 else:
                     for ur_name in r.upstream_reqs:
                         if not self.is_sys_req(ur_name):
-                            errors.append("%s: Bad upstream requirement %s (must be system requirement)" % (r.name, ur_name))
+                            errors.append("%s: bad upstream requirement %s (must be system requirement)" % (r.name, ur_name))
             else:
-                errors.append("Not recognized as a user, system or software requirement name: %s" % r.name)
+                errors.append("not recognized as a user, system or software requirement name: %s" % r.name)
 
         return errors
 
@@ -406,6 +406,10 @@ class TraceabilityChecker(object):
                 if match_req_pat:
                     last_req = match_req_pat.group(1)
                     #print("Requirement found: %s" % last_req)
+                    if not last_req.startswith(self.cfg['REQUIREMENT_PREFIX']):
+                        print("Error: invalid requirement prefix for '%s' (should begin with '%s')" % (last_req, self.cfg['REQUIREMENT_PREFIX']))
+                        sys.exit(1)
+
                     if not self.find_requirement(last_req):
                         last_req_obj = Requirement(last_req)
                         self.requirements.add(last_req_obj)
@@ -416,7 +420,7 @@ class TraceabilityChecker(object):
                 elif match_req_trace_pat:
                     ''' enter traceability collection mode '''
                     if not last_req:
-                        print("Error parsing requirements file: traceability encountered without requirement")
+                        print("Error: found traceability without requirement while parsing requirements file")
                         sys.exit(1)
                     in_traceability=True
                     trace_group = match_req_trace_pat.group(1)
