@@ -1,0 +1,5 @@
+Run `sphinx-apidoc -o . ../../spec_checker' in this directory.
+
+This will generate `modules.rst' and `spec_checker.rst'.
+
+Then include `modules.rst' in your `index.rst' file.
