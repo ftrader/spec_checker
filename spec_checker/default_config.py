@@ -21,21 +21,27 @@ SW_REQ_TAG = '-SW-REQ-'
 
 # regular expression to find requirements in req file
 REQUIREMENT_PATTERN = '^\s*Requirement:\s*([\w-]+)\s*$'
-REQUIREMENT_TRACEABILITY_START = '^\s*Traceability:\s*(' + REQUIREMENT_PREFIX + '-.*)\s*$'
-REQUIREMENT_TRACEABILITY_CONT = '^\s*(' + REQUIREMENT_PREFIX + '-[\w-]*[,;]\s*)*(' + REQUIREMENT_PREFIX + '-[\w-]*)[,;]*\s*$'
+REQUIREMENT_TRACEABILITY_START = '^\s*Traceability:\s*(' \
+                                 + REQUIREMENT_PREFIX + '-.*)\s*$'
+REQUIREMENT_TRACEABILITY_CONT = '^\s*(' + REQUIREMENT_PREFIX \
+                                + '-[\w-]*[,;]\s*)*(' + REQUIREMENT_PREFIX \
+                                + '-[\w-]*)[,;]*\s*$'
 
 # regular expression to find design elements in des file
 DESIGN_PREFIX = REQUIREMENT_PREFIX
-DESIGN_PATTERN ='^[\s]*Design[\s]*:\s*([\w-])\s*$'
+DESIGN_PATTERN = '^[\s]*Design[\s]*:\s*([\w-])\s*$'
 DES_TAG = '-DES-'
 
-# design elements are introduced by their ids in parenthesis at end of a section heading line in the markdown text
+# design elements are introduced by their ids in parenthesis at end of a
+# section heading line in the markdown text
 # e.g.
 #### some heading: brief element description (ELEMENT-ID)
 DESIGN_ELEMENT_INTRODUCTION = '\#.*\((' + DESIGN_PREFIX + '.*)\)\s*$'
 REQ_TO_DES_SECTION_START = '#.*Requirements -> design\s*$'
 REQ_TO_DES_TABLE_START = '^--- | ---$'
-REQ_TO_DES_ENTRY = '^\s*(' + REQUIREMENT_PREFIX + '.*)\s*\|\s*(' + DESIGN_PREFIX + '.*)\s*$'
+REQ_TO_DES_ENTRY = '^\s*(' + REQUIREMENT_PREFIX + '.*)\s*\|\s*(' \
+                   + DESIGN_PREFIX + '.*)\s*$'
 DES_TO_REQ_SECTION_START = '#.*Design -> requirements\s*$'
 DES_TO_REQ_TABLE_START = '^--- | ---$'
-DES_TO_REQ_ENTRY = '^\s*(' + DESIGN_PREFIX + '.*)\s*\|\s*(' + REQUIREMENT_PREFIX + '.*)\s*$'
+DES_TO_REQ_ENTRY = '^\s*(' + DESIGN_PREFIX + '.*)\s*\|\s*(' \
+                   + REQUIREMENT_PREFIX + '.*)\s*$'
