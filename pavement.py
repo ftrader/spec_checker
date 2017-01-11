@@ -26,7 +26,8 @@ install_distutils_tasks()
 
 def print_passed():
     # generated on http://patorjk.com/software/taag/#p=display&f=Small&t=PASSED
-    print_success_message(r'''  ___  _   ___ ___ ___ ___
+    print_success_message(r'''
+  ___  _   ___ ___ ___ ___
  | _ \/_\ / __/ __| __|   \
  |  _/ _ \\__ \__ \ _|| |) |
  |_|/_/ \_\___/___/___|___/
@@ -35,7 +36,8 @@ def print_passed():
 
 def print_failed():
     # generated on http://patorjk.com/software/taag/#p=display&f=Small&t=FAILED
-    print_failure_message(r'''  ___ _   ___ _    ___ ___
+    print_failure_message(r'''
+  ___ _   ___ _    ___ ___
  | __/_\ |_ _| |  | __|   \
  | _/ _ \ | || |__| _|| |) |
  |_/_/ \_\___|____|___|___/
