@@ -3,7 +3,7 @@
 
 A linting tool for textual requirement/design specifications of
 the type introduced at
-https://github.com/btcfork/collaborative_spec_elaboration
+https://github.com/btcfork/bitcoinfork-collaborative-spec
 """
 
 # The package name, which is also the "UNIX name" for the project.
