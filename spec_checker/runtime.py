@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Classes for requirements, design elements and the checker itself"""
 
-# TODO: relocate doctests?
+# TODO: ensure doctests are executed
 
 import sys
 import re
@@ -10,6 +10,7 @@ import re
 class Requirement(object):
     ''' requirement class modeling a textual requirement. Not everything
     is captured, currently only the name and traceability. '''
+
     def __init__(self, name):
         self.name = name
         self.upstream_reqs = []
@@ -26,7 +27,8 @@ class Requirement(object):
         elif type(input_str_or_list) == str:
             self.raw_trace_reqs.append(input_str_or_list)
         else:
-            print("Unrecognized type - not list or string: %s" % input_str_or_list)
+            print("Unrecognized type - not list or string: %s" %
+                  input_str_or_list)
             sys.exit(1)
 
     def add_design_elem(self, input_str):
@@ -50,6 +52,7 @@ class DesignElement(object):
     ''' class modeling a textual design element. Not everything
     is captured, currently only the name and specified traceability to
     SW reqs. '''
+
     def __init__(self, name):
         self.name = name
         self.linked_reqs = []
@@ -65,11 +68,13 @@ class DesignElement(object):
         elif type(input_str_or_list) == str:
             self.linked_reqs.append(input_str_or_list)
         else:
-            print("Unrecognized type - not list or string: %s" % input_str_or_list)
+            print("Unrecognized type - not list or string: %s" %
+                  input_str_or_list)
             sys.exit(1)
 
 
 class TraceabilityChecker(object):
+
     def __init__(self, cfg_dict, reqfile, desfile, code_path_or_url=None):
         self.cfg = cfg_dict
         # assert that all the necessary config bits are there
@@ -89,12 +94,17 @@ class TraceabilityChecker(object):
         assert(self.cfg['DES_TO_REQ_TABLE_START'])
         assert(self.cfg['DES_TO_REQ_ENTRY'])
         self.req_pattern = re.compile(self.cfg['REQUIREMENT_PATTERN'])
-        self.req_trace_pattern = re.compile(self.cfg['REQUIREMENT_TRACEABILITY_START'])
-        self.req_trace_cont_pattern = re.compile(self.cfg['REQUIREMENT_TRACEABILITY_CONT'])
-        self.des_elem_intro_pattern = re.compile(self.cfg['DESIGN_ELEMENT_INTRODUCTION'])
-        self.req_to_des_start_pattern = re.compile(self.cfg['REQ_TO_DES_SECTION_START'])
+        self.req_trace_pattern = re.compile(
+            self.cfg['REQUIREMENT_TRACEABILITY_START'])
+        self.req_trace_cont_pattern = re.compile(
+            self.cfg['REQUIREMENT_TRACEABILITY_CONT'])
+        self.des_elem_intro_pattern = re.compile(
+            self.cfg['DESIGN_ELEMENT_INTRODUCTION'])
+        self.req_to_des_start_pattern = re.compile(
+            self.cfg['REQ_TO_DES_SECTION_START'])
         self.req_to_des_cont_pattern = re.compile(self.cfg['REQ_TO_DES_ENTRY'])
-        self.des_to_req_start_pattern = re.compile(self.cfg['DES_TO_REQ_SECTION_START'])
+        self.des_to_req_start_pattern = re.compile(
+            self.cfg['DES_TO_REQ_SECTION_START'])
         self.des_to_req_cont_pattern = re.compile(self.cfg['DES_TO_REQ_ENTRY'])
 
         self.reqfile = reqfile
@@ -109,44 +119,44 @@ class TraceabilityChecker(object):
         if self.desfile:
             self.read_design()
         print("source code : %s (not implemented yet)" % self.srcpath)
-        #self.read_source()
+        # self.read_source()
 
     # helper function which return True depending on type of requirement
     # according to its name
     def is_user_req(self, req_name):
         '''
-        >>> is_user_req('THE-SPEC_CHECKER-USER-REQ-1')
+        >>> TraceabilityChecker.is_user_req('THE-SPEC_CHECKER-USER-REQ-1')
         True
-        >>> is_user_req('THE-SPEC_CHECKER-SYS-REQ-1')
+        >>> TraceabilityChecker.is_user_req('THE-SPEC_CHECKER-SYS-REQ-1')
         False
-        >>> is_user_req('THE-SPEC_CHECKER-SW-REQ-1-1')
+        >>> TraceabilityChecker.is_user_req('THE-SPEC_CHECKER-SW-REQ-1-1')
         False
         '''
-        return req_name.startswith(self.cfg['REQUIREMENT_PREFIX'] 
+        return req_name.startswith(self.cfg['REQUIREMENT_PREFIX']
                                    + self.cfg['USER_REQ_TAG'])
 
     def is_sys_req(self, req_name):
         '''
-        >>> is_sys_req('THE-SPEC_CHECKER-USER-REQ-1')
+        >>> TraceabilityChecker.is_sys_req('THE-SPEC_CHECKER-USER-REQ-1')
         False
-        >>> is_sys_req('THE-SPEC_CHECKER-SYS-REQ-1')
+        >>> TraceabilityChecker.is_sys_req('THE-SPEC_CHECKER-SYS-REQ-1')
         True
-        >>> is_sys_req('THE-SPEC_CHECKER-SW-REQ-1-1')
+        >>> TraceabilityChecker.is_sys_req('THE-SPEC_CHECKER-SW-REQ-1-1')
         False
         '''
-        return req_name.startswith(self.cfg['REQUIREMENT_PREFIX'] 
+        return req_name.startswith(self.cfg['REQUIREMENT_PREFIX']
                                    + self.cfg['SYS_REQ_TAG'])
 
     def is_sw_req(self, req_name):
         '''
-        >>> is_sw_req('THE-SPEC_CHECKER-USER-REQ-1')
+        >>> TraceabilityChecker.is_sw_req('THE-SPEC_CHECKER-USER-REQ-1')
         False
-        >>> is_sw_req('THE-SPEC_CHECKER-SYS-REQ-1')
+        >>> TraceabilityChecker.is_sw_req('THE-SPEC_CHECKER-SYS-REQ-1')
         False
-        >>> is_sw_req('THE-SPEC_CHECKER-SW-REQ-1-1')
+        >>> TraceabilityChecker.is_sw_req('THE-SPEC_CHECKER-SW-REQ-1-1')
         True
         '''
-        return req_name.startswith(self.cfg['REQUIREMENT_PREFIX'] 
+        return req_name.startswith(self.cfg['REQUIREMENT_PREFIX']
                                    + self.cfg['SW_REQ_TAG'])
 
     # helper functions to determine upstream/downstream relations
@@ -154,17 +164,23 @@ class TraceabilityChecker(object):
     def is_upstream(self, r1, r2):
         ''' return True if r1 is potential upstream of r2, else False
 
-        >>> is_upstream('THE-SPEC_CHECKER-USER-REQ-1', 'THE-SPEC_CHECKER-SYS-REQ-1')
+        >>> TraceabilityChecker.is_upstream('THE-SPEC_CHECKER-USER-REQ-1',\
+            'THE-SPEC_CHECKER-SYS-REQ-1')
         True
-        >>> is_upstream('THE-SPEC_CHECKER-SYS-REQ-1', 'THE-SPEC_CHECKER-SW-REQ-1-1')
+        >>> TraceabilityChecker.is_upstream('THE-SPEC_CHECKER-SYS-REQ-1',\
+            'THE-SPEC_CHECKER-SW-REQ-1-1')
         True
-        >>> is_upstream('THE-SPEC_CHECKER-USER-REQ-1', 'THE-SPEC_CHECKER-SW-REQ-1')
+        >>> TraceabilityChecker.is_upstream('THE-SPEC_CHECKER-USER-REQ-1',\
+            'THE-SPEC_CHECKER-SW-REQ-1')
         False
-        >>> is_upstream('THE-SPEC_CHECKER-SYS-REQ-1', 'THE-SPEC_CHECKER-USER-REQ-1')
+        >>> TraceabilityChecker.is_upstream('THE-SPEC_CHECKER-SYS-REQ-1',\
+            'THE-SPEC_CHECKER-USER-REQ-1')
         False
-        >>> is_upstream('THE-SPEC_CHECKER-SW-REQ-1', 'THE-SPEC_CHECKER-SYS-REQ-1')
+        >>> TraceabilityChecker.is_upstream('THE-SPEC_CHECKER-SW-REQ-1',\
+            'THE-SPEC_CHECKER-SYS-REQ-1')
         False
-        >>> is_upstream('THE-SPEC_CHECKER-SW-REQ-1', 'THE-SPEC_CHECKER-USER-REQ-1')
+        >>> TraceabilityChecker.is_upstream('THE-SPEC_CHECKER-SW-REQ-1',\
+            'THE-SPEC_CHECKER-USER-REQ-1')
         False
         '''
         if self.is_user_req(r1) and self.is_sys_req(r2):
@@ -176,17 +192,23 @@ class TraceabilityChecker(object):
     def is_downstream(self, r1, r2):
         ''' return True if r1 is potential downstream of r2, else False
 
-        >>> is_downstream('THE-SPEC_CHECKER-USER-REQ-1', 'THE-SPEC_CHECKER-SYS-REQ-1')
+        >>> TraceabilityChecker.is_downstream('THE-SPEC_CHECKER-USER-REQ-1',\
+            'THE-SPEC_CHECKER-SYS-REQ-1')
         False
-        >>> is_downstream('THE-SPEC_CHECKER-SYS-REQ-1', 'THE-SPEC_CHECKER-SW-REQ-1-1')
+        >>> TraceabilityChecker.is_downstream('THE-SPEC_CHECKER-SYS-REQ-1',\
+            'THE-SPEC_CHECKER-SW-REQ-1-1')
         False
-        >>> is_downstream('THE-SPEC_CHECKER-USER-REQ-1', 'THE-SPEC_CHECKER-SW-REQ-1')
+        >>> TraceabilityChecker.is_downstream('THE-SPEC_CHECKER-USER-REQ-1',\
+            'THE-SPEC_CHECKER-SW-REQ-1')
         False
-        >>> is_downstream('THE-SPEC_CHECKER-SYS-REQ-1', 'THE-SPEC_CHECKER-USER-REQ-1')
+        >>> TraceabilityChecker.is_downstream('THE-SPEC_CHECKER-SYS-REQ-1',\
+            'THE-SPEC_CHECKER-USER-REQ-1')
         True
-        >>> is_downstream('THE-SPEC_CHECKER-SW-REQ-1', 'THE-SPEC_CHECKER-SYS-REQ-1')
+        >>> TraceabilityChecker.is_downstream('THE-SPEC_CHECKER-SW-REQ-1',\
+            'THE-SPEC_CHECKER-SYS-REQ-1')
         True
-        >>> is_downstream('THE-SPEC_CHECKER-SW-REQ-1', 'THE-SPEC_CHECKER-USER-REQ-1')
+        >>> TraceabilityChecker.is_downstream('THE-SPEC_CHECKER-SW-REQ-1',\
+            'THE-SPEC_CHECKER-USER-REQ-1')
         False
         '''
         if self.is_sys_req(r1) and self.is_user_req(r2):
@@ -200,25 +222,27 @@ class TraceabilityChecker(object):
         separated by commas, semi-colons and/or tab/space.
         Returns a list (possibly empty) of req/des identifiers.
 
-        >>> group_split("THE-SPEC_CHECKER-SW-REQ-1-1")
+        >>> TraceabilityChecker.group_split("THE-SPEC_CHECKER-SW-REQ-1-1")
         ['THE-SPEC_CHECKER-SW-REQ-1-1']
-        >>> group_split("THE-SPEC_CHECKER-SW-REQ-1-1,THE-SPEC_CHECKER-SW-REQ-1-2")
+        >>> TraceabilityChecker.group_split("THE-SPEC_CHECKER-SW-REQ-1-1,"\
+            "THE-SPEC_CHECKER-SW-REQ-1-2")
         ['THE-SPEC_CHECKER-SW-REQ-1-1', 'THE-SPEC_CHECKER-SW-REQ-1-2']
-        >>> group_split("THE-SPEC_CHECKER-SW-REQ-2-1;THE-SPEC_CHECKER-SW-REQ-2-2")
+        >>> TraceabilityChecker.group_split("THE-SPEC_CHECKER-SW-REQ-2-1;"\
+            "THE-SPEC_CHECKER-SW-REQ-2-2")
         ['THE-SPEC_CHECKER-SW-REQ-2-1', 'THE-SPEC_CHECKER-SW-REQ-2-2']
-        >>> group_split("THE-SPEC_CHECKER-SW-REQ-3-1, THE-SPEC_CHECKER-SW-REQ-3-2")
+        >>> TraceabilityChecker.group_split("THE-SPEC_CHECKER-SW-REQ-3-1,"\
+            " THE-SPEC_CHECKER-SW-REQ-3-2")
         ['THE-SPEC_CHECKER-SW-REQ-3-1', 'THE-SPEC_CHECKER-SW-REQ-3-2']
-        >>> group_split("THE-SPEC_CHECKER-SW-REQ-4-1, foo, THE-SPEC_CHECKER-SW-REQ-4-2")
+        >>> TraceabilityChecker.group_split("THE-SPEC_CHECKER-SW-REQ-4-1, "\
+            "foo, THE-SPEC_CHECKER-SW-REQ-4-2")
         ['THE-SPEC_CHECKER-SW-REQ-4-1', 'THE-SPEC_CHECKER-SW-REQ-4-2']
-        >>> group_split("TODO: complete this list")
+        >>> TraceabilityChecker.group_split("TODO: complete this list")
         []
         '''
         split_group = re.split(',|;| |\t', group.strip())
-        #print "re.split group:", split_group
-        result = [ r.strip() for r in split_group 
-                     if (r.startswith(self.cfg['REQUIREMENT_PREFIX']) 
-                         or r.startswith(self.cfg['DESIGN_PREFIX'])) ]
-        #print("group_split(): %s" % result)
+        result = [r.strip() for r in split_group
+                  if (r.startswith(self.cfg['REQUIREMENT_PREFIX'])
+                      or r.startswith(self.cfg['DESIGN_PREFIX']))]
         return result
 
     def find_requirement(self, name):
@@ -243,29 +267,32 @@ class TraceabilityChecker(object):
         not resolve in self.requirements raises an error. Errors are
         collected and returned in a non-empty list, otherwise an empty list
         is returned. '''
-        self.req_names = [ r.name for r in self.requirements ]
-        result = [] # collect errors in here, return empty list if all ok
+        self.req_names = [r.name for r in self.requirements]
+        result = []  # collect errors in here, return empty list if all ok
         assert(self.req_names)
         for r in self.requirements:
-            #print("rebuilding up and downstreams for %s" % r.name)
             for rr in r.raw_trace_reqs:
                 if rr not in self.req_names:
-                    result.append("'%s' : traceability to unknown requirement '%s'" % (r.name, rr))
+                    result.append(
+                        "'%s' : traceability to unknown requirement '%s'"
+                        % (r.name, rr))
                 else:
                     # determine if upstream or downstream
                     # then add if not already in
                     if self.is_upstream(rr, r.name):
-                        #print("%s is considered upstream of %s" % (rr, r.name))
+                        # rr considered upstream of r.name
                         if rr not in r.upstream_reqs:
                             r.upstream_reqs.append(rr)
-                            #print("appended %s to upstream reqs of %s" % (rr, r.name))
+                            # appended rr to upstream reqs of r.name
                     elif self.is_downstream(rr, r.name):
-                        #print("%s is considered downstream of %s" % (rr, r.name))
+                        # rr is considered downstream of r.name
                         if rr not in r.downstream_reqs:
                             r.downstream_reqs.append(rr)
-                            #print("appended %s to downstream reqs of %s" % (rr, r.name))
+                            # appended rr to downstream reqs of r.name
                     else:
-                        result.append("'%s' : traceability on same level: '%s'" % (r.name, rr))
+                        result.append(
+                            "'%s' : traceability on same level: '%s'"
+                            % (r.name, rr))
         return result
 
     def check(self):
@@ -277,7 +304,6 @@ class TraceabilityChecker(object):
             errors += self.check_design_consistency()
         return errors
 
-
     def check_design_consistency(self):
         ''' check consistency for design elements '''
         errors = []
@@ -286,7 +312,7 @@ class TraceabilityChecker(object):
         if not self.design_elements:
             errors.append("No design elements found.")
         else:
-            # check #1. check that each SW-req has associated design element(s)
+            # check #1. check that each SW-req has associated design elem(s)
             for r in self.requirements:
                 if self.is_sw_req(r.name):
                     referencing_elems = []
@@ -294,18 +320,29 @@ class TraceabilityChecker(object):
                         if d.is_linked_to_req(r.name):
                             referencing_elems.append(d)
                     if not referencing_elems:
-                        errors.append("software requirement '%s' has no associated design element" % r.name)
-            # check #2. check that all design element(s) have linked SW-REQs and that only SW reqs are linked
+                        errors.append(
+                            "software requirement '%s' has no associated "
+                            "design element" % r.name)
+            # check #2. check that all design element(s) have linked SW-REQs
+            # and that only SW reqs are linked
             for d in self.design_elements:
                 if not d.linked_reqs:
-                    errors.append("design element '%s' is not linked to software requirement(s)" % d.name)
+                    errors.append(
+                        "design element '%s' is not linked to software "
+                        "requirement(s)" % d.name)
                 else:
                     for lr in d.linked_reqs:
                         if not self.is_sw_req(lr):
-                            errors.append("%s: linked requirement '%s' is not a software requirement" % (d.name, lr))
+                            errors.append(
+                                "%s: linked requirement '%s' is not a "
+                                "software requirement" % (d.name, lr))
                         if not self.find_requirement(lr):
-                            errors.append("%s: linked requirement '%s' was not found" % (d.name, lr))
-            # check #3. TODO: consistency and completeness check between req->des and des->req tables
+                            errors.append(
+                                "%s: linked requirement '%s' was not found"
+                                % (d.name, lr))
+            # check #3. TODO: consistency and completeness check between
+            # req->des and des->req tables
+
             # check #4. TODO: well-formedness of all design element ids
 
         return errors
@@ -317,7 +354,7 @@ class TraceabilityChecker(object):
             errors.append("no valid requirements found.")
 
         for r in self.requirements:
-            #print "Checking ", r.name, ':', r.raw_trace_reqs
+            # print "Checking ", r.name, ':', r.raw_trace_reqs
             # go through the raw trace reqs and build upstream/downstream reqs
             if ((not r.upstream_reqs and not r.downstream_reqs) or
                     not r.are_ups_and_downs_consistent_with_raw_reqs()):
@@ -330,36 +367,54 @@ class TraceabilityChecker(object):
                 errors.append("invalid requirement prefix: %s" % r.name)
 
             if self.cfg['USER_REQ_TAG'] in r.name:
-                assert(not r.upstream_reqs) # should not be possible at all
+                assert(not r.upstream_reqs)  # should not be possible at all
                 if not r.downstream_reqs:
-                    errors.append("no system requirements for user requirement %s" % r.name)
+                    errors.append(
+                        "no system requirements for user requirement %s"
+                        % r.name)
                 else:
                     for dr_name in r.downstream_reqs:
                         if not self.is_sys_req(dr_name):
-                            errors.append("%s: bad downstream requirement %s (must be system requirement)" % (r.name, dr_name))
+                            errors.append(
+                                "%s: bad downstream requirement %s (must be "
+                                "system requirement)" % (r.name, dr_name))
             elif self.cfg['SYS_REQ_TAG'] in r.name:
                 if not r.upstream_reqs:
-                    errors.append("no user requirements for system requirement %s" % r.name)
+                    errors.append(
+                        "no user requirements for system requirement %s"
+                        % r.name)
                 else:
                     for ur_name in r.upstream_reqs:
                         if not self.is_user_req(ur_name):
-                            errors.append("%s: bad upstream requirement %s (must be user requirement)" % (r.name, ur_name))
+                            errors.append(
+                                "%s: bad upstream requirement %s (must be "
+                                "user requirement)" % (r.name, ur_name))
                 if not r.downstream_reqs:
-                    errors.append("no software requirements for system requirement %s" % r.name)
+                    errors.append(
+                        "no software requirements for system requirement %s"
+                        % r.name)
                 else:
                     for dr_name in r.downstream_reqs:
                         if not self.is_sw_req(dr_name):
-                            errors.append("%s: bad downstream requirement %s (must be software requirement)" % (r.name, dr_name))
+                            errors.append(
+                                "%s: bad downstream requirement %s (must be "
+                                "software requirement)" % (r.name, dr_name))
             elif self.cfg['SW_REQ_TAG'] in r.name:
-                assert(not r.downstream_reqs) # nope out
+                assert(not r.downstream_reqs)  # nope out
                 if not r.upstream_reqs:
-                    errors.append("No system requirements for software requirement %s" % r.name)
+                    errors.append(
+                        "No system requirements for software requirement %s"
+                        % r.name)
                 else:
                     for ur_name in r.upstream_reqs:
                         if not self.is_sys_req(ur_name):
-                            errors.append("%s: bad upstream requirement %s (must be system requirement)" % (r.name, ur_name))
+                            errors.append(
+                                "%s: bad upstream requirement %s (must be "
+                                "system requirement)" % (r.name, ur_name))
             else:
-                errors.append("not recognized as a user, system or software requirement name: %s" % r.name)
+                errors.append(
+                    "not recognized as a user, system or software "
+                    "requirement name: %s" % r.name)
 
         return errors
 
@@ -374,40 +429,41 @@ class TraceabilityChecker(object):
             print(e)
             sys.exit(1)
         content = rf.readlines()
-        in_traceability=False
+        in_traceability = False
         last_req = None
         last_req_obj = None
         traceability = []
         for line in content:
             line = line.strip()
             if in_traceability:
-                #print("in traceability continuation mode...")
+                # in traceability continuation mode...
                 assert(last_req)
                 match_trace_cont = self.req_trace_cont_pattern.match(line)
                 if match_trace_cont:
                     trace_group = match_trace_cont.group()
                     if trace_group:
-                        #print("Traceability group for %s: %s" % (last_req, trace_group))
                         for e in self.group_split(trace_group):
                             traceability.append(e)
                 else:
-                    ''' exit traceability collection mode '''
+                    # exit traceability collection mode
                     for derived_req in traceability:
-                        #print("adding traceability to %s : %s" % (last_req, derived_req))
                         assert(last_req_obj)
                         last_req_obj.add_raw_trace_req(derived_req)
-                    #print("exiting traceability mode for %s" % last_req)
                     in_traceability = False
 
             else:
                 # not in a specific state
-                match_req_pat = self.req_pattern.match(line)  # Requirement: ...
-                match_req_trace_pat = self.req_trace_pattern.match(line)  # Traceability: ...
+                # Requirement: ...
+                match_req_pat = self.req_pattern.match(line)
+                # Traceability: ...
+                match_req_trace_pat = self.req_trace_pattern.match(line)
                 if match_req_pat:
                     last_req = match_req_pat.group(1)
-                    #print("Requirement found: %s" % last_req)
+                    # requirement found
                     if not last_req.startswith(self.cfg['REQUIREMENT_PREFIX']):
-                        print("Error: invalid requirement prefix for '%s' (should begin with '%s')" % (last_req, self.cfg['REQUIREMENT_PREFIX']))
+                        print("Error: invalid requirement prefix for '%s' "
+                              "(should begin with '%s')" % (
+                                  last_req, self.cfg['REQUIREMENT_PREFIX']))
                         sys.exit(1)
 
                     if not self.find_requirement(last_req):
@@ -415,16 +471,17 @@ class TraceabilityChecker(object):
                         self.requirements.add(last_req_obj)
                         traceability = []
                     else:
-                        print("Error parsing requirements file: duplicate requirement definition")
+                        print("Error parsing requirements file: duplicate "
+                              "requirement definition")
                         sys.exit(1)
                 elif match_req_trace_pat:
                     ''' enter traceability collection mode '''
                     if not last_req:
-                        print("Error: found traceability without requirement while parsing requirements file")
+                        print("Error: found traceability without requirement "
+                              "while parsing requirements file")
                         sys.exit(1)
-                    in_traceability=True
+                    in_traceability = True
                     trace_group = match_req_trace_pat.group(1)
-                    #print("Traceability group for %s: %s" % (last_req, trace_group))
                     for e in self.group_split(trace_group):
                         traceability.append(e)
 
@@ -433,7 +490,6 @@ class TraceabilityChecker(object):
         for later checking.
         In the input file, all design elements must precede the tables
         that cross-reference requirements and design. '''
-        #print("design      : %s" % self.desfile)
         try:
             df = open(self.desfile, 'rt')
         except Exception, e:
@@ -442,33 +498,36 @@ class TraceabilityChecker(object):
             print(e)
             sys.exit(1)
         content = df.readlines()
-        in_req_to_des=False
-        in_des_to_req=False
+        in_req_to_des = False
+        in_des_to_req = False
         for line in content:
             line = line.strip()
             if in_req_to_des:
-                #print("in req_to_des continuation mode...")
-                match_req_to_des_cont = self.req_to_des_cont_pattern.match(line)
+                match_req_to_des_cont = self.req_to_des_cont_pattern.match(
+                    line)
                 if match_req_to_des_cont:
-                    req_group_split = self.group_split(match_req_to_des_cont.group(1))
-                    des_group_split = self.group_split(match_req_to_des_cont.group(2))
+                    req_group_split = self.group_split(
+                        match_req_to_des_cont.group(1))
+                    des_group_split = self.group_split(
+                        match_req_to_des_cont.group(2))
                     if req_group_split:
-                        #print("requirements -> design: req group %s" % (req_group_split))
                         pass
                     else:
-                        print("Error: no requirement(s) found in requirement->design table entry: '%s'" % line)
+                        print("Error: no requirement(s) found in requirement"
+                              "->design table entry: '%s'" % line)
                         sys.exit(1)
 
                     if des_group_split:
-                        #print("requirements -> design: des group: %s" % (des_group_split))
                         pass
                     else:
-                        print("Error: no design element(s) found in requirement->design table entry: '%s'" % line)
+                        print("Error: no design element(s) found in "
+                              "requirement->design table entry: '%s'" % line)
                         sys.exit(1)
                     # add req->des links
                     for r in req_group_split:
-                        if not r in [ req.name for req in self.requirements ]:
-                            print("Error: unknown requirement '%s' found in requirement->design table" % r)
+                        if not r in [req.name for req in self.requirements]:
+                            print("Error: unknown requirement '%s' found in "
+                                  "requirement->design table" % r)
                         else:
                             r_obj = self.find_requirement(r)
                             for d in des_group_split:
@@ -477,31 +536,34 @@ class TraceabilityChecker(object):
                 else:
                     ''' exit req->des collection mode, finalize data '''
                     if line.startswith("#") or line == '---':
-                        #print("exiting...")
+                        # exiting...
                         in_req_to_des = False
             elif in_des_to_req:
-                #print("in des_to_req continuation mode...")
-                match_des_to_req_cont = self.des_to_req_cont_pattern.match(line)
+                # in des_to_req continuation mode...
+                match_des_to_req_cont = self.des_to_req_cont_pattern.match(
+                    line)
                 if match_des_to_req_cont:
-                    des_group_split = self.group_split(match_des_to_req_cont.group(1))
-                    req_group_split = self.group_split(match_des_to_req_cont.group(2))
+                    des_group_split = self.group_split(
+                        match_des_to_req_cont.group(1))
+                    req_group_split = self.group_split(
+                        match_des_to_req_cont.group(2))
                     if des_group_split:
-                        #print("design -> requirements: des group: %s" % (des_group_split))
                         pass
                     else:
-                        print("Error: no design element(s) found in design->requirement table entry: '%s'" % line)
+                        print("Error: no design element(s) found in design->"
+                              "requirement table entry: '%s'" % line)
                         sys.exit(1)
 
                     if req_group_split:
-                        #print("design -> requirements: req group %s" % (req_group_split))
                         pass
                     else:
-                        print("Error: no requirement(s) found in design->requirement table entry: '%s'" % line)
+                        print("Error: no requirement(s) found in design->"
+                              "requirement table entry: '%s'" % line)
                         sys.exit(1)
 
                     # add des->req links
                     for d in des_group_split:
-                        if not d in [ des.name for des in self.design_elements ]:
+                        if not d in [des.name for des in self.design_elements]:
                             print("Error: unknown design element '%s' "
                                   "found in design->requirement table" % d)
                         else:
@@ -512,16 +574,19 @@ class TraceabilityChecker(object):
                 else:
                     ''' exit des->req collection mode, finalize data '''
                     if line.startswith("#") or line == '---':
-                        #print("exiting...")
+                        # exiting...
                         in_des_to_req = False
 
             # not in a specific state
-            match_des_elem_intro_pat = self.des_elem_intro_pattern.match(line)  # Design element reference
-            match_req_to_des_start_pat = self.req_to_des_start_pattern.match(line)
-            match_des_to_req_start_pat = self.des_to_req_start_pattern.match(line)
+            match_des_elem_intro_pat = self.des_elem_intro_pattern.match(
+                line)  # Design element reference
+            match_req_to_des_start_pat = self.req_to_des_start_pattern.match(
+                line)
+            match_des_to_req_start_pat = self.des_to_req_start_pattern.match(
+                line)
             if match_des_elem_intro_pat:
                 des_elem = match_des_elem_intro_pat.group(1)
-                #print("Design element reference found: %s" % des_elem)
+                # design element reference found
                 if not self.find_design_elem(des_elem):
                     des_elem_obj = DesignElement(des_elem)
                     self.design_elements.add(des_elem_obj)
@@ -531,14 +596,14 @@ class TraceabilityChecker(object):
                     sys.exit(1)
             elif match_req_to_des_start_pat:
                 ''' enter requirements->design start mode '''
-                #print("Entering requirements -> design section")
+                # entering requirements -> design section
                 in_req_to_des = True
             elif match_des_to_req_start_pat:
                 ''' enter design->requirements start mode '''
-                #print("Entering design -> requirements section")
+                # entering design -> requirements section
                 in_des_to_req = True
 
 
 if __name__ == "__main__":
-        import doctest
-        doctest.testmod()
+    import doctest
+    doctest.testmod()
