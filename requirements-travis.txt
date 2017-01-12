@@ -1,4 +1,2 @@
 --requirement requirements-dev.txt
-Paver
-virtualenv
 nose
