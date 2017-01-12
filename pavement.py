@@ -14,14 +14,14 @@ from setup import (
     print_failure_message, _lint, _test, _test_all,
     CODE_DIRECTORY, DOCS_DIRECTORY, TESTS_DIRECTORY, PYTEST_FLAGS)
 
-from paver.easy import options, task, needs, consume_args
+from paver.easy import options, task, needs, consume_args, sh
 from paver.setuputils import install_distutils_tasks
 
 options(setup=setup_dict)
 
 install_distutils_tasks()
 
-## Miscellaneous helper functions
+# Miscellaneous helper functions
 
 
 def print_passed():
@@ -48,6 +48,7 @@ class cwd(object):
     """Class used for temporarily changing directories. Can be though of
     as a `pushd /my/dir' then a `popd' at the end.
     """
+
     def __init__(self, newcwd):
         """:param newcwd: directory to make the cwd
         :type newcwd: :class:`str`
@@ -64,7 +65,7 @@ class cwd(object):
         os.chdir(self.oldcwd)
 
 
-## Task-related functions
+# Task-related functions
 
 def _doc_make(*make_args):
     """Run make in sphinx' docs directory.
@@ -86,7 +87,7 @@ def _doc_make(*make_args):
     return retcode
 
 
-## Tasks
+# Tasks
 
 @task
 @needs('doc_html', 'setuptools.command.sdist')
@@ -99,6 +100,12 @@ def sdist():
 def test():
     """Run the unit tests."""
     raise SystemExit(_test())
+
+
+@task  # @needs('setup_nose_plugin')
+def nosetests():
+    nose_options = '--with-doctest'  # Put your command-line options in there
+    sh('nosetests %s %s' % (nose_options, CODE_DIRECTORY))
 
 
 @task
@@ -173,6 +180,7 @@ def doc_watch():
         raise SystemExit(1)
 
     class RebuildDocsEventHandler(FileSystemEventHandler):
+
         def __init__(self, base_paths):
             self.base_paths = base_paths
 
