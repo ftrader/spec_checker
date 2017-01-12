@@ -221,6 +221,44 @@ class TraceabilityChecker(object):
             errors += self.check_design_consistency()
         return errors
 
+    def check_sw_reqs_have_des_elems(self):
+        ''' check that each SW-req has associated design elem(s) '''
+        errors = []
+        for r in self.requirements:
+            if self._is_sw_req(r.name):
+                referencing_elems = []
+                for d in self.design_elements:
+                    if d.is_linked_to_req(r.name):
+                        referencing_elems.append(d)
+                if not referencing_elems:
+                    errors.append(
+                        "software requirement '%s' has no associated "
+                        "design element" % r.name)
+        return errors
+
+    def check_all_des_elems_linked_to_sw_reqs(self):
+        '''
+        check that all design element(s) have linked SW-REQs
+        and that only SW reqs are linked
+        '''
+        errors = []
+        for d in self.design_elements:
+            if not d.linked_reqs:
+                errors.append(
+                    "design element '%s' is not linked to software "
+                    "requirement(s)" % d.name)
+            else:
+                for lr in d.linked_reqs:
+                    if not self._is_sw_req(lr):
+                        errors.append(
+                            "%s: linked requirement '%s' is not a "
+                            "software requirement" % (d.name, lr))
+                    if not self.find_requirement(lr):
+                        errors.append(
+                            "%s: linked requirement '%s' was not found"
+                            % (d.name, lr))
+        return errors
+
     def check_design_consistency(self):
         ''' check consistency for design elements '''
         errors = []
@@ -230,37 +268,102 @@ class TraceabilityChecker(object):
             errors.append("No design elements found.")
         else:
             # check #1. check that each SW-req has associated design elem(s)
-            for r in self.requirements:
-                if self._is_sw_req(r.name):
-                    referencing_elems = []
-                    for d in self.design_elements:
-                        if d.is_linked_to_req(r.name):
-                            referencing_elems.append(d)
-                    if not referencing_elems:
-                        errors.append(
-                            "software requirement '%s' has no associated "
-                            "design element" % r.name)
+            for error in self.check_sw_reqs_have_des_elems():
+                errors.append(error)
+
             # check #2. check that all design element(s) have linked SW-REQs
             # and that only SW reqs are linked
-            for d in self.design_elements:
-                if not d.linked_reqs:
-                    errors.append(
-                        "design element '%s' is not linked to software "
-                        "requirement(s)" % d.name)
-                else:
-                    for lr in d.linked_reqs:
-                        if not self._is_sw_req(lr):
-                            errors.append(
-                                "%s: linked requirement '%s' is not a "
-                                "software requirement" % (d.name, lr))
-                        if not self.find_requirement(lr):
-                            errors.append(
-                                "%s: linked requirement '%s' was not found"
-                                % (d.name, lr))
+            for error in self.check_all_des_elems_linked_to_sw_reqs():
+                errors.append(error)
+
             # check #3. TODO: consistency and completeness check between
             # req->des and des->req tables
 
             # check #4. TODO: well-formedness of all design element ids
+
+        return errors
+
+    def check_user_req_linkage(self, req_obj):
+        ''' checks linkage of a user requirement '''
+        errors = []
+        if not req_obj.downstream_reqs:
+            errors.append(
+                "no system requirements for user requirement %s"
+                % req_obj.name)
+        else:
+            for dr_name in req_obj.downstream_reqs:
+                if not self._is_sys_req(dr_name):
+                    errors.append(
+                        "%s: bad downstream requirement %s (must be "
+                        "system requirement)" % (req_obj.name, dr_name))
+        return errors
+
+    def check_sys_req_linkage(self, req_obj):
+        ''' checks linkage of a system requirement '''
+        errors = []
+        if not req_obj.upstream_reqs:
+            errors.append(
+                "no user requirements for system requirement %s"
+                % req_obj.name)
+        else:
+            for ur_name in req_obj.upstream_reqs:
+                if not self._is_user_req(ur_name):
+                    errors.append(
+                        "%s: bad upstream requirement %s (must be "
+                        "user requirement)" % (req_obj.name, ur_name))
+        if not req_obj.downstream_reqs:
+            errors.append(
+                "no software requirements for system requirement %s"
+                % req_obj.name)
+        else:
+            for dr_name in req_obj.downstream_reqs:
+                if not self._is_sw_req(dr_name):
+                    errors.append(
+                        "%s: bad downstream requirement %s (must be "
+                        "software requirement)" % (req_obj.name, dr_name))
+        return errors
+
+    def check_sw_req_linkage(self, req_obj):
+        ''' checks linkage of a software requirement '''
+        errors = []
+        if not req_obj.upstream_reqs:
+            errors.append(
+                "No system requirements for software requirement %s"
+                % req_obj.name)
+        else:
+            for ur_name in req_obj.upstream_reqs:
+                if not self._is_sys_req(ur_name):
+                    errors.append(
+                        "%s: bad upstream requirement %s (must be "
+                        "system requirement)" % (req_obj.name, ur_name))
+        return errors
+
+    def check_requirement_linkage(self, req_name, req_obj=None):
+        '''
+        check whether a named requirement is adequately linked to up- and
+        downstream requirements
+        '''
+        errors = []
+        if not req_obj:
+            r = self.find_requirement(req_name)
+        else:
+            r = req_obj
+        if self.cfg['USER_REQ_TAG'] in req_name:
+            assert(not r.upstream_reqs)  # should not be possible at all
+            for error in self.check_user_req_linkage(r):
+                errors.append(error)
+        elif self.cfg['SYS_REQ_TAG'] in req_name:
+            for error in self.check_sys_req_linkage(r):
+                errors.append(error)
+        elif self.cfg['SW_REQ_TAG'] in req_name:
+            assert(not r.downstream_reqs)
+            for error in self.check_sw_req_linkage(r):
+                errors.append(error)
+
+        else:
+            errors.append(
+                "not recognized as a user, system or software "
+                "requirement name: %s" % req_name)
 
         return errors
 
@@ -271,7 +374,6 @@ class TraceabilityChecker(object):
             errors.append("no valid requirements found.")
 
         for r in self.requirements:
-            # print "Checking ", r.name, ':', r.raw_trace_reqs
             # go through the raw trace reqs and build upstream/downstream reqs
             if ((not r.upstream_reqs and not r.downstream_reqs) or
                     not r.are_ups_and_downs_consistent_with_raw_reqs()):
@@ -283,55 +385,9 @@ class TraceabilityChecker(object):
             if not r.name.startswith(self.cfg['REQUIREMENT_PREFIX']):
                 errors.append("invalid requirement prefix: %s" % r.name)
 
-            if self.cfg['USER_REQ_TAG'] in r.name:
-                assert(not r.upstream_reqs)  # should not be possible at all
-                if not r.downstream_reqs:
-                    errors.append(
-                        "no system requirements for user requirement %s"
-                        % r.name)
-                else:
-                    for dr_name in r.downstream_reqs:
-                        if not self._is_sys_req(dr_name):
-                            errors.append(
-                                "%s: bad downstream requirement %s (must be "
-                                "system requirement)" % (r.name, dr_name))
-            elif self.cfg['SYS_REQ_TAG'] in r.name:
-                if not r.upstream_reqs:
-                    errors.append(
-                        "no user requirements for system requirement %s"
-                        % r.name)
-                else:
-                    for ur_name in r.upstream_reqs:
-                        if not self._is_user_req(ur_name):
-                            errors.append(
-                                "%s: bad upstream requirement %s (must be "
-                                "user requirement)" % (r.name, ur_name))
-                if not r.downstream_reqs:
-                    errors.append(
-                        "no software requirements for system requirement %s"
-                        % r.name)
-                else:
-                    for dr_name in r.downstream_reqs:
-                        if not self._is_sw_req(dr_name):
-                            errors.append(
-                                "%s: bad downstream requirement %s (must be "
-                                "software requirement)" % (r.name, dr_name))
-            elif self.cfg['SW_REQ_TAG'] in r.name:
-                assert(not r.downstream_reqs)  # nope out
-                if not r.upstream_reqs:
-                    errors.append(
-                        "No system requirements for software requirement %s"
-                        % r.name)
-                else:
-                    for ur_name in r.upstream_reqs:
-                        if not self._is_sys_req(ur_name):
-                            errors.append(
-                                "%s: bad upstream requirement %s (must be "
-                                "system requirement)" % (r.name, ur_name))
-            else:
-                errors.append(
-                    "not recognized as a user, system or software "
-                    "requirement name: %s" % r.name)
+            #  check that the requirement is properly linked up and down
+            for error in self.check_requirement_linkage(r.name, r):
+                errors.append(error)
 
         return errors
 
