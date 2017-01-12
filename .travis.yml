@@ -3,10 +3,11 @@ cache: pip
 python:
   - "2.6"
   - "2.7"
-  - "3.2"
-  - "3.3"
   - "3.4"
+  - "3.5"
+  - "3.6"
   - "pypy"
+  - "pypy3"
 
 before_script:
   - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then export PYTHON_EXE=pypy; export PIP_EXE=pip; else export PYTHON_EXE=python; fi
