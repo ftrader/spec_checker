@@ -276,7 +276,8 @@ setup_dict = dict(
         # 'gui_scripts': [
         #     'spec_checker_gui = spec_checker.gui:entry_point'
         # ]
-    }
+    },
+    use_2to3=True
 )
 
 
