@@ -396,7 +396,7 @@ class TraceabilityChecker(object):
         Requirement objects for later checking '''
         try:
             rf = open(self.reqfile, 'rt')
-        except Exception, e:
+        except Exception as e:
             raise
             print("Error: unable to open requirements at '%s'" % self.reqfile)
             print(e)
@@ -465,7 +465,7 @@ class TraceabilityChecker(object):
         that cross-reference requirements and design. '''
         try:
             df = open(self.desfile, 'rt')
-        except Exception, e:
+        except Exception as e:
             raise
             print("Error: unable to open design at '%s'" % self.desfile)
             print(e)
