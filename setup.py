@@ -246,7 +246,9 @@ setup_dict = dict(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Documentation',
         'Topic :: Software Development :: Quality Assurance',
@@ -260,7 +262,7 @@ setup_dict = dict(
     ] + python_version_specific_requires,
     # Allow tests to be run with `python setup.py test'.
     tests_require=[
-        'pytest==2.5.1',
+        'pytest==3.0.5',
         'mock==1.0.1',
         'flake8==2.1.0',
     ],
