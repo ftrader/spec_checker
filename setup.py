@@ -6,7 +6,7 @@ import sys
 import imp
 import subprocess
 
-## Python 2.6 subprocess.check_output compatibility. Thanks Greg Hewgill!
+# Python 2.6 subprocess.check_output compatibility. Thanks Greg Hewgill!
 if 'check_output' not in dir(subprocess):
     def check_output(cmd_args, *args, **kwargs):
         proc = subprocess.Popen(
@@ -34,7 +34,7 @@ except ImportError:
 # Add the current directory to the module search path.
 sys.path.insert(0, os.path.abspath('.'))
 
-## Constants
+# Constants
 CODE_DIRECTORY = 'spec_checker'
 DOCS_DIRECTORY = 'docs'
 TESTS_DIRECTORY = 'tests'
@@ -55,7 +55,7 @@ metadata = imp.load_source(
     'metadata', os.path.join(CODE_DIRECTORY, 'metadata.py'))
 
 
-## Miscellaneous helper functions
+# Miscellaneous helper functions
 
 def get_project_files():
     """Retrieve a list of project files, ignoring hidden files.
@@ -203,6 +203,7 @@ def _test_all():
 # See <http://pythonhosted.org/setuptools/python3.html>
 # Code based on <http://pytest.org/latest/goodpractises.html#integration-with-setuptools-test-commands>  # NOPEP8
 class TestAllCommand(TestCommand):
+
     def finalize_options(self):
         TestCommand.finalize_options(self)
         # These are fake, and just set to appease distutils and setuptools.
@@ -246,9 +247,6 @@ setup_dict = dict(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Documentation',
         'Topic :: Software Development :: Quality Assurance',
@@ -276,8 +274,7 @@ setup_dict = dict(
         # 'gui_scripts': [
         #     'spec_checker_gui = spec_checker.gui:entry_point'
         # ]
-    },
-    use_2to3=True
+    }
 )
 
 
