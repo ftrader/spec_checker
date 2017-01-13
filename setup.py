@@ -269,7 +269,7 @@ setup_dict = dict(
     zip_safe=False,  # don't use eggs
     entry_points={
         'console_scripts': [
-            'spec_checker_cli = spec_checker.main:entry_point'
+            'spec-checker = spec_checker.main:entry_point'
         ],
         # if you have a gui, use this
         # 'gui_scripts': [
