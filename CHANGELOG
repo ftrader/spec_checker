@@ -1,0 +1,7 @@
+2017-01-13  v0.0.1
+
+	First alpha version which only handles requirements and design.
+	Parsing of files is strongly geared towards the precise format
+        used on the BTCfork specifications.
+        See also TODO for further work to be done.
+

@@ -1,0 +1,4 @@
+- feature: reading of source files from paths / URLs
+- testing: add unit tests to cover the errors detected up to now
+- cleanup: refactor the requirement/design file reading methods
+           so that we can reduce max-complexity to 10 again
