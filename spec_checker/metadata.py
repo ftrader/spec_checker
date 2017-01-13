@@ -12,6 +12,11 @@ project = "Spec Checker"
 project_no_spaces = project.replace(' ', '')
 version = '0.0.1'
 description = 'Tool for checking textual requirement/design specifications'
+long_description = 'This tool checks textual requirement/design' \
+    ' specifications\n' \
+    'like the one being developed at:\n' \
+    'https://github.com/BTCfork/bitcoinfork-collaborative-spec \n' \
+    'for consistency.'
 authors = ['freetrader']
 authors_string = ', '.join(authors)
 emails = ['freetrader@tuta.io']
