@@ -1,8 +1,9 @@
 # Emacs rope configuration
 .ropeproject
+# Eclipse / PyDev configuration
+.settings
 .project
 .pydevproject
-.settings
 
 # pyenv version file
 .python-version
@@ -41,3 +42,6 @@ pip-log.txt
 *.orig
 *.old
 .cache
+
+# downloaded egg cache
+.eggs
