@@ -9,6 +9,18 @@ import re
 from spec_checker import util, requirement, designelement
 
 
+class ErrorList(object):
+    def __init__(self):
+        self._err_list = []
+
+    def append(self, item):
+        if not item in self._err_list:
+            self._err_list.append(item)
+
+    def as_list(self):
+        return self._err_list
+
+
 class TraceabilityChecker(object):
 
     def __init__(self, cfg_dict, reqfile, desfile, code_path_or_url=None):
@@ -119,7 +131,8 @@ class TraceabilityChecker(object):
         collected and returned in a non-empty list, otherwise an empty list
         is returned. '''
         self.req_names = [r.name for r in self.requirements]
-        result = []  # collect errors in here, return empty list if all ok
+        # collect errors, return empty list if all ok
+        result = ErrorList()
         assert(self.req_names)
         for r in self.requirements:
             for rr in r.raw_trace_reqs:
@@ -144,7 +157,7 @@ class TraceabilityChecker(object):
                         result.append(
                             "'%s' : traceability on same level: '%s'"
                             % (r.name, rr))
-        return result
+        return result.as_list()
 
     def check(self):
         ''' check traceability '''
@@ -157,7 +170,7 @@ class TraceabilityChecker(object):
 
     def check_sw_reqs_have_des_elems(self):
         ''' check that each SW-req has associated design elem(s) '''
-        errors = []
+        errors = ErrorList()
         for r in self.requirements:
             if self._is_sw_req(r.name):
                 referencing_elems = []
@@ -168,14 +181,14 @@ class TraceabilityChecker(object):
                     errors.append(
                         "software requirement '%s' has no associated "
                         "design element" % r.name)
-        return errors
+        return errors.as_list()
 
     def check_all_des_elems_linked_to_sw_reqs(self):
         '''
         check that all design element(s) have linked SW-REQs
         and that only SW reqs are linked
         '''
-        errors = []
+        errors = ErrorList()
         for d in self.design_elements:
             if not d.linked_reqs:
                 errors.append(
@@ -191,11 +204,11 @@ class TraceabilityChecker(object):
                         errors.append(
                             "%s: linked requirement '%s' was not found"
                             % (d.name, lr))
-        return errors
+        return errors.as_list()
 
     def check_design_consistency(self):
         ''' check consistency for design elements '''
-        errors = []
+        errors = ErrorList()
         # we definitely expect requirements for cross-reference purposes
         assert(self.requirements)
         if not self.design_elements:
@@ -215,11 +228,11 @@ class TraceabilityChecker(object):
 
             # check #4. TODO: well-formedness of all design element ids
 
-        return errors
+        return errors.as_list()
 
     def check_user_req_linkage(self, req_obj):
         ''' checks linkage of a user requirement '''
-        errors = []
+        errors = ErrorList()
         if not req_obj.downstream_reqs:
             errors.append(
                 "no system requirements for user requirement %s"
@@ -230,11 +243,11 @@ class TraceabilityChecker(object):
                     errors.append(
                         "%s: bad downstream requirement %s (must be "
                         "system requirement)" % (req_obj.name, dr_name))
-        return errors
+        return errors.as_list()
 
     def check_sys_req_linkage(self, req_obj):
         ''' checks linkage of a system requirement '''
-        errors = []
+        errors = ErrorList()
         if not req_obj.upstream_reqs:
             errors.append(
                 "no user requirements for system requirement %s"
@@ -255,11 +268,11 @@ class TraceabilityChecker(object):
                     errors.append(
                         "%s: bad downstream requirement %s (must be "
                         "software requirement)" % (req_obj.name, dr_name))
-        return errors
+        return errors.as_list()
 
     def check_sw_req_linkage(self, req_obj):
         ''' checks linkage of a software requirement '''
-        errors = []
+        errors = ErrorList()
         if not req_obj.upstream_reqs:
             errors.append(
                 "No system requirements for software requirement %s"
@@ -270,14 +283,14 @@ class TraceabilityChecker(object):
                     errors.append(
                         "%s: bad upstream requirement %s (must be "
                         "system requirement)" % (req_obj.name, ur_name))
-        return errors
+        return errors.as_list()
 
     def check_requirement_linkage(self, req_name, req_obj=None):
         '''
         check whether a named requirement is adequately linked to up- and
         downstream requirements
         '''
-        errors = []
+        errors = ErrorList()
         if not req_obj:
             r = self.find_requirement(req_name)
         else:
@@ -299,11 +312,11 @@ class TraceabilityChecker(object):
                 "not recognized as a user, system or software "
                 "requirement name: %s" % req_name)
 
-        return errors
+        return errors.as_list()
 
     def check_requirements_consistency(self):
         ''' check consistency for requirements '''
-        errors = []
+        errors = ErrorList()
         if not self.requirements:
             errors.append("no valid requirements found.")
 
@@ -323,7 +336,7 @@ class TraceabilityChecker(object):
             for error in self.check_requirement_linkage(r.name, r):
                 errors.append(error)
 
-        return errors
+        return errors.as_list()
 
     def read_requirements(self):
         ''' read a requirements file and construct set of
