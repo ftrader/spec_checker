@@ -1,3 +1,8 @@
+2017-01-16  v0.0.3
+
+	Read 'spec-checker.conf' if available and no other config
+        file specified.
+
 2017-01-15  v0.0.2
 
 	Renamed CLI program to 'spec-checker' (matching package name).

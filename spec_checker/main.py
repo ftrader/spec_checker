@@ -11,21 +11,46 @@ import sys
 from spec_checker import metadata, runtime, default_config
 
 
+def load_config_from_file(filepath):
+    ''' load a configuration from a file '''
+    try:
+        with open(filepath) as f:
+            code = compile(f.read(), filepath, 'exec')
+            exec(code)
+            config = {
+                "PROJECT_ID": locals()["PROJECT_ID"],
+                "REQUIREMENT_PREFIX": locals()["REQUIREMENT_PREFIX"],
+                "USER_REQ_TAG": locals()["USER_REQ_TAG"],
+                "SYS_REQ_TAG": locals()["SYS_REQ_TAG"],
+                "SW_REQ_TAG": locals()["SW_REQ_TAG"],
+                "REQUIREMENT_PATTERN": locals()["REQUIREMENT_PATTERN"],
+                "REQUIREMENT_TRACEABILITY_START":
+                locals()["REQUIREMENT_TRACEABILITY_START"],
+                "REQUIREMENT_TRACEABILITY_CONT":
+                locals()["REQUIREMENT_TRACEABILITY_CONT"],
+                "DESIGN_ELEMENT_INTRODUCTION":
+                locals()["DESIGN_ELEMENT_INTRODUCTION"],
+                "REQ_TO_DES_SECTION_START":
+                locals()["REQ_TO_DES_SECTION_START"],
+                "REQ_TO_DES_TABLE_START": locals()["REQ_TO_DES_TABLE_START"],
+                "REQ_TO_DES_ENTRY": locals()["REQ_TO_DES_ENTRY"],
+                "DESIGN_PREFIX": locals()["DESIGN_PREFIX"],
+                "DES_TO_REQ_SECTION_START":
+                locals()["DES_TO_REQ_SECTION_START"],
+                "DES_TO_REQ_TABLE_START": locals()["DES_TO_REQ_TABLE_START"],
+                "DES_TO_REQ_ENTRY": locals()["DES_TO_REQ_ENTRY"]
+            }
+    except Exception:
+        raise
+    return config
+
+
 def main(argv):
     """Program entry point.
 
     :param argv: command-line arguments
     :type argv: :class:`list`
     """
-    # initialize these since otherwise PEP8 checker complains
-    # about F821 undefined name
-    PROJECT_ID = REQUIREMENT_PREFIX = USER_REQ_TAG = SYS_REQ_TAG = \
-        SW_REQ_TAG = REQUIREMENT_PATTERN = REQUIREMENT_TRACEABILITY_START = \
-        REQUIREMENT_TRACEABILITY_CONT = DESIGN_ELEMENT_INTRODUCTION = \
-        REQ_TO_DES_SECTION_START = REQ_TO_DES_TABLE_START = \
-        REQ_TO_DES_ENTRY = DESIGN_PREFIX = DES_TO_REQ_SECTION_START = \
-        DES_TO_REQ_TABLE_START = DES_TO_REQ_ENTRY = None
-
     author_strings = []
     for name, email in zip(metadata.authors, metadata.emails):
         author_strings.append('Author: {0} <{1}>'.format(name, email))
@@ -68,36 +93,16 @@ This program is licensed under the AGPLv3.
                 print("Error: configuration file '%s' not found" % args.config)
                 sys.exit(1)
             print("loading configuration from '%s'" % args.config)
-            with open(args.config) as f:
-                code = compile(f.read(), args.config, 'exec')
-                exec(code)
-                config = {
-                    "PROJECT_ID": PROJECT_ID,
-                    "REQUIREMENT_PREFIX": REQUIREMENT_PREFIX,
-                    "USER_REQ_TAG": USER_REQ_TAG,
-                    "SYS_REQ_TAG": SYS_REQ_TAG,
-                    "SW_REQ_TAG": SW_REQ_TAG,
-                    "REQUIREMENT_PATTERN": REQUIREMENT_PATTERN,
-                    "REQUIREMENT_TRACEABILITY_START":
-                    REQUIREMENT_TRACEABILITY_START,
-                    "REQUIREMENT_TRACEABILITY_CONT":
-                    REQUIREMENT_TRACEABILITY_CONT,
-                    "DESIGN_ELEMENT_INTRODUCTION":
-                    DESIGN_ELEMENT_INTRODUCTION,
-                    "REQ_TO_DES_SECTION_START": REQ_TO_DES_SECTION_START,
-                    "REQ_TO_DES_TABLE_START": REQ_TO_DES_TABLE_START,
-                    "REQ_TO_DES_ENTRY": REQ_TO_DES_ENTRY,
-                    "DESIGN_PREFIX": DESIGN_PREFIX,
-                    "DES_TO_REQ_SECTION_START": DES_TO_REQ_SECTION_START,
-                    "DES_TO_REQ_TABLE_START": DES_TO_REQ_TABLE_START,
-                    "DES_TO_REQ_ENTRY": DES_TO_REQ_ENTRY
-                }
+            config = load_config_from_file(args.config)
         else:
             # try to load the standard settings
-            print(
-                "loading configuration from %s/check_traceability_project.py"
-                % os.getcwd())
-            config = default_config.__dict__
+            default_cfg_file = "%s/spec-checker.conf" % os.getcwd()
+            if os.path.exists(default_cfg_file):
+                print("loading configuration from %s"
+                      % default_cfg_file)
+                config = load_config_from_file(default_cfg_file)
+            else:
+                config = default_config.__dict__
     except Exception:
         raise
 

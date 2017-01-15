@@ -10,7 +10,7 @@ https://github.com/btcfork/bitcoinfork-collaborative-spec
 package = 'spec_checker'
 project = "Spec Checker"
 project_no_spaces = project.replace(' ', '')
-version = '0.0.2'
+version = '0.0.3'
 description = 'Tool for checking textual requirement/design specifications'
 long_description = 'This tool checks textual requirement/design' \
     ' specifications\n' \
