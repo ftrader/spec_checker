@@ -1,3 +1,8 @@
+2017-01-15  v0.0.2
+
+	Renamed CLI program to 'spec-checker' (matching package name).
+	Fixed repetition of error messages.
+
 2017-01-13  v0.0.1
 
 	First alpha version which only handles requirements and design.

@@ -1,4 +1,6 @@
 - feature: reading of source files from paths / URLs
+- feature: add detection of requirements in design doc which do not exist in requirements doc
+           (noticed this can go undetected in the traceability tables)
 - testing: add unit tests to cover the errors detected up to now
 - cleanup: refactor the requirement/design file reading methods
            so that we can reduce max-complexity to 10 again
